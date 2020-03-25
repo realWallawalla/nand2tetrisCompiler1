@@ -7,7 +7,7 @@ public class TokenFactory implements Factory<Token>{
     @Override
     public Token create(String tokenType, String value) {
         Token token = null;
-        switch (TokenType.valueOf(tokenType)) {
+        switch (TokenType.valueOf(tokenType.toUpperCase())) {
            case SYMBOL:
                token = new Symbol(value);
                break;

@@ -1,6 +1,8 @@
 package com.timonsarakinis.tokens.types;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public enum SymbolType {
     OPENING_BRACE("{"),
@@ -31,5 +33,9 @@ public enum SymbolType {
 
     public String getCharacter() {
         return character;
+    }
+
+    public static List<String> getCharacters() {
+        return Arrays.stream(SymbolType.values()).map(SymbolType::getCharacter).collect(Collectors.toList());
     }
 }

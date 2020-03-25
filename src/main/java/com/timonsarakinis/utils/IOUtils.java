@@ -55,6 +55,10 @@ public class IOUtils {
         }
     }
 
+    public static Path getOutputPath(String fileName) {
+        return Paths.get(DIR_PATH + fileName + FILE_EXTENSION);
+    }
+
     public static void createDirectory() {
         Path path = Paths.get(DIR_PATH);
         try {
@@ -66,8 +70,7 @@ public class IOUtils {
         }
     }
 
-    public static Path getOutputPath(String fileName) {
-        Path path = Paths.get(DIR_PATH + fileName + FILE_EXTENSION);
+    public static void deleteFile(Path path) {
         if (Files.exists(path)) {
             try {
                 Files.delete(path);
@@ -75,7 +78,6 @@ public class IOUtils {
                 e.printStackTrace();
             }
         }
-        return path;
     }
 
     public static String extractFileName(String fileName) {
