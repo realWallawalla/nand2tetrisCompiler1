@@ -21,7 +21,7 @@ public class TokenFactory implements Factory<Token>{
                 token = new Identifier(value);
                 break;
             case STRING_CONST:
-                token = new StringConstant(value);
+                token = new StringConstant(value.replaceAll("\"", ""));
                 break;
        }
         return token;

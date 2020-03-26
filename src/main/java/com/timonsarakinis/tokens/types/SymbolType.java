@@ -18,10 +18,10 @@ public enum SymbolType {
     HIPHON("-"),
     PLUS("+"),
     SLASH("/"),
-    AMPERSAND("&"),
+    AMPERSAND("&amp;"),
     VERTICAL_BAR("|"),
-    LESS_THAN("<"),
-    GREATER_THAN(">"),
+    LESS_THAN("&lt;"),
+    GREATER_THAN("&gt;"),
     EQUALS("="),
     TILDE("~");
 

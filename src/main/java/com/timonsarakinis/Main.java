@@ -36,7 +36,7 @@ public class Main {
             writeToFile(tokenInXml, fileName);
         }
         writeRootNode(root, fileName, false);
-        System.out.printf("wrote output successfully to file: %s", fileName);
+        System.out.printf("wrote output successfully to file: %s \n", fileName);
     }
 
     private static void writeRootNode(String rootNode, String fileName, boolean openTag) {
