@@ -1,9 +1,9 @@
 package com.timonsarakinis.utils;
 
+import com.timonsarakinis.tokens.NonTerminalToken;
 import com.timonsarakinis.tokens.Token;
 import com.timonsarakinis.tokens.types.KeywordType;
 import com.timonsarakinis.tokens.types.SymbolType;
-import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -77,7 +77,7 @@ public class TokenUtils {
             return SYMBOL.toString();
         } else if (isValidEnumIgnoreCase(KeywordType.class, token)) {
             return KEYWORD.toString();
-        } else if (StringUtils.isNumeric(token)) {
+        } else if (isNumeric(token)) {
             return INT_CONST.toString();
         } else if (token.indexOf("\"") == 0) {
             return STRING_CONST.toString();
@@ -86,10 +86,21 @@ public class TokenUtils {
         }
     }
 
-    public static byte[] prepareForOutPut(Token token) {
+    public static byte[] prepareTerminalForOutPut(Token token) {
         String node = token.getTokenType().getNodeName();
         String value = token.getValue();
 
         return "<".concat(node).concat(">").concat(value).concat("</").concat(node).concat(">").concat("\n").getBytes(StandardCharsets.UTF_8);
+    }
+
+    public static byte[] prepareNonTerminalForOutPut(NonTerminalToken token, boolean open) {
+        String node = token.getNodeName();
+        String base = "";
+        if (open) {
+            base = "<".concat(node).concat(">");
+        } else {
+            base = ("</").concat(node).concat(">");
+        }
+        return base.concat("\n").getBytes(StandardCharsets.UTF_8);
     }
 }

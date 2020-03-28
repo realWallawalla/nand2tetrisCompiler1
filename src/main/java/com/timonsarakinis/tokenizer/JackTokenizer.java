@@ -32,10 +32,12 @@ public class JackTokenizer implements Tokenizer {
         this.currentToken = requireNonNull(tokenFactory).create(tokenType, token);
     }
 
+    @Override
     public TokenType tokenType() {
         return currentToken.getTokenType();
     }
 
+    @Override
     public Token getCurrentToken() {
         return currentToken;
     }

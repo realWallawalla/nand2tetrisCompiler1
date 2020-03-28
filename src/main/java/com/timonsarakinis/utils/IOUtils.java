@@ -39,7 +39,7 @@ public class IOUtils {
     public static List<String> readFile(Path filePath) {
         try {
             BufferedReader reader = Files.newBufferedReader(filePath);
-            System.out.println("Successfully read jack file");
+            System.out.printf("Successfully read %s \n", filePath.getFileName());
             return reader.lines().collect(Collectors.toList());
         } catch (IOException e) {
             e.printStackTrace();

@@ -1,6 +1,10 @@
 package com.timonsarakinis;
 
+import com.timonsarakinis.engine.Engine;
+import com.timonsarakinis.engine.JackCompilationEngine;
 import com.timonsarakinis.tokenizer.JackTokenizer;
+import com.timonsarakinis.tokenizer.Tokenizer;
+import com.timonsarakinis.tokens.Token;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -23,29 +27,13 @@ public class Main {
         deleteFile(getOutputPath(fileName));
         List<String> lines = readFile(path);
         String tokens = removeNoneTokens(lines);
-        tokenize(splitIntoTokens(tokens), fileName);
+        compile(splitIntoTokens(tokens), fileName);
     }
 
-    private static void tokenize(List<String> tokens, String fileName) {
-        JackTokenizer jackTokenizer = new JackTokenizer(tokens);
-        String root = "tokens";
-        writeRootNode(root, fileName, true);
-        while (jackTokenizer.hasMoreTokens()) {
-            jackTokenizer.advance();
-            byte[] tokenInXml = prepareForOutPut(jackTokenizer.getCurrentToken());
-            writeToFile(tokenInXml, fileName);
-        }
-        writeRootNode(root, fileName, false);
+    private static void compile(List<String> tokens, String fileName) {
+        JackTokenizer tokenizer = new JackTokenizer(tokens);
+        Engine<Tokenizer> engine = new JackCompilationEngine(tokenizer, fileName);
+        engine.compile(tokenizer);
         System.out.printf("wrote output successfully to file: %s \n", fileName);
-    }
-
-    private static void writeRootNode(String rootNode, String fileName, boolean openTag) {
-        byte[] rootXml;
-        if (openTag) {
-            rootXml = "<".concat(rootNode).concat(">").concat("\n").getBytes(StandardCharsets.UTF_8);
-        } else {
-            rootXml = "</".concat(rootNode).concat(">").getBytes(StandardCharsets.UTF_8);
-        }
-        writeToFile(rootXml, fileName);
     }
 }

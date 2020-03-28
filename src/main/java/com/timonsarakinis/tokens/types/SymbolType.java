@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public enum SymbolType {
-    OPENING_BRACE("{"),
+    OPEN_BRACE("{"),
     CLOSE_BRACE("}"),
     OPEN_PARENTHESIS("("),
     CLOSE_PARENTHESIS(")"),
