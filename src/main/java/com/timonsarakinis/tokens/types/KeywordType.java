@@ -1,5 +1,10 @@
 package com.timonsarakinis.tokens.types;
 
+import com.google.common.collect.Lists;
+
+import java.util.Collections;
+import java.util.List;
+
 public enum KeywordType {
     CLASS("class"),
     METHOD("method"),
@@ -31,5 +36,9 @@ public enum KeywordType {
 
     public String getValue() {
         return value;
+    }
+
+    public static List<KeywordType> getKeywordConstants() {
+        return Collections.unmodifiableList(Lists.newArrayList(TRUE, FALSE, NULL, THIS));
     }
 }

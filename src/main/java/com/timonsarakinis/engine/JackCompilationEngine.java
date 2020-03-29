@@ -3,12 +3,8 @@ package com.timonsarakinis.engine;
 import com.timonsarakinis.tokenizer.Tokenizer;
 import com.timonsarakinis.tokens.NonTerminalToken;
 import com.timonsarakinis.tokens.Token;
-import com.timonsarakinis.tokens.types.KeywordType;
-import com.timonsarakinis.tokens.types.NonTerminalType;
-import com.timonsarakinis.tokens.types.StatementType;
+import com.timonsarakinis.tokens.types.*;
 import com.timonsarakinis.utils.IOUtils;
-
-import java.util.function.Predicate;
 
 import static com.timonsarakinis.tokens.types.KeywordType.*;
 import static com.timonsarakinis.tokens.types.NonTerminalType.*;
@@ -68,7 +64,7 @@ public class JackCompilationEngine implements Engine<Tokenizer> {
 
     private void compileClassVarDeclaration() {
         writeNonTerminalToFile(CLASS_VAR_DEC, true);
-        eatAndAdvance(token -> token.getValue().equals(FIELD.getValue()) || token.getValue().equals(STATIC.getValue()));
+        eatAndAdvance(isCurrentTokenEqualTo(FIELD.getValue()) || isCurrentTokenEqualTo(STATIC.getValue()));
 
         eatAndAdvance(isType());
         eatAndAdvance(isIdentifier());
@@ -83,8 +79,8 @@ public class JackCompilationEngine implements Engine<Tokenizer> {
 
     private void compileSubroutineDeclaration() {
         writeNonTerminalToFile(SUBROUTINE_DEC, true);
-        eatAndAdvance(token -> isCurrentTokenSubroutine());
-        eatAndAdvance(isType().or(token -> token.getValue().equals(VOID.getValue())));
+        eatAndAdvance(isCurrentTokenSubroutine());
+        eatAndAdvance(isType() || isCurrentTokenEqualTo(VOID.getValue()));
         eatAndAdvance(isIdentifier());
 
         eatAndAdvance(OPEN_PARENTHESIS.getCharacter());
@@ -163,7 +159,6 @@ public class JackCompilationEngine implements Engine<Tokenizer> {
         writeNonTerminalToFile(StatementType.IF, true);
         eatAndAdvance(KeywordType.IF.getValue());
         eatAndAdvance(OPEN_PARENTHESIS.getCharacter());
-        //TODO expression
         compileExpression();
         eatAndAdvance(CLOSE_PARENTHESIS.getCharacter());
         eatAndAdvance(OPEN_BRACE.getCharacter());
@@ -186,8 +181,10 @@ public class JackCompilationEngine implements Engine<Tokenizer> {
         eatAndAdvance(OPEN_BRACE.getCharacter());
 
         writeNonTerminalToFile(STATEMENTS, true);
-        compileStatements();
-        writeNonTerminalToFile(STATEMENTS, true);
+        while (isValidEnumIgnoreCase(StatementType.class, getCurrentTokenValue())) {
+            compileStatements();
+        }
+        writeNonTerminalToFile(STATEMENTS, false);
 
         eatAndAdvance(CLOSE_BRACE.getCharacter());
     }
@@ -196,7 +193,6 @@ public class JackCompilationEngine implements Engine<Tokenizer> {
         writeNonTerminalToFile(StatementType.WHILE, true);
         eatAndAdvance(KeywordType.WHILE.getValue());
         eatAndAdvance(OPEN_PARENTHESIS.getCharacter());
-        //TODO expression
         compileExpression();
         eatAndAdvance(CLOSE_PARENTHESIS.getCharacter());
         eatAndAdvance(OPEN_BRACE.getCharacter());
@@ -215,6 +211,12 @@ public class JackCompilationEngine implements Engine<Tokenizer> {
         writeNonTerminalToFile(StatementType.DO, true);
         eatAndAdvance(KeywordType.DO.getValue());
         eatAndAdvance(isIdentifier());
+        compileSubroutineCall();
+        eatAndAdvance(SEMICOLON.getCharacter());
+        writeNonTerminalToFile(StatementType.DO, false);
+    }
+
+    private void compileSubroutineCall() {
         if (getCurrentTokenValue().contains(DOT.getCharacter())) {
             eatAndAdvance(DOT.getCharacter());
             eatAndAdvance(isIdentifier());
@@ -222,8 +224,6 @@ public class JackCompilationEngine implements Engine<Tokenizer> {
         eatAndAdvance(OPEN_PARENTHESIS.getCharacter());
         compileExpressionList();
         eatAndAdvance(CLOSE_PARENTHESIS.getCharacter());
-        eatAndAdvance(SEMICOLON.getCharacter());
-        writeNonTerminalToFile(StatementType.DO, false);
     }
 
     private void compileLet() {
@@ -244,7 +244,6 @@ public class JackCompilationEngine implements Engine<Tokenizer> {
     private void compileReturn() {
         writeNonTerminalToFile(StatementType.RETURN, true);
         eatAndAdvance(RETURN.getValue());
-        //TODO expressions
         if (!getCurrentTokenValue().equals(SEMICOLON.getCharacter())) {
             compileExpression();
         }
@@ -254,44 +253,88 @@ public class JackCompilationEngine implements Engine<Tokenizer> {
 
     private void compileExpressionList() {
         writeNonTerminalToFile(EXPRESSION_LIST, true);
-        //TODO expression
         if (!isCurrentTokenEqualTo(CLOSE_PARENTHESIS.getCharacter())) {
-            do {
-                compileExpression();
-            } while (isCurrentTokenEqualTo(COMMA.getCharacter()));
+            compileExpression();
         }
         writeNonTerminalToFile(EXPRESSION_LIST, false);
     }
 
     private void compileExpression() {
-        //TODO expression
-        if (isCurrentTokenEqualTo(COMMA.getCharacter())) {
-            eatAndAdvance(COMMA.getCharacter());
-        }
         writeNonTerminalToFile(EXPRESSION, true);
         compileTerm();
         writeNonTerminalToFile(EXPRESSION, false);
+
+        if (isCurrentTokenEqualTo(COMMA.getCharacter())) {
+            eatAndAdvance(COMMA.getCharacter());
+            compileExpression();
+        }
+
+        eatAndAdvance(SEMICOLON.getCharacter());
     }
 
     private void compileTerm() {
         writeNonTerminalToFile(TERM, true);
-        eatAndAdvance(isIdentifier());
+        eatAndAdvance(isTermConstant());
+        if (isIdentifier()) {
+            lookAhead();
+        } else if (isCurrentTokenEqualTo(OPEN_PARENTHESIS.getCharacter())) {
+            eatAndAdvance(true);
+            compileExpression();
+            eatAndAdvance(isCurrentTokenEqualTo(CLOSE_PARENTHESIS.getCharacter()));
+        } else if (isCurrentTokenEqualTo(HIPHON.getCharacter()) || isCurrentTokenEqualTo(TILDE.getCharacter())) {
+            eatAndAdvance(true);
+            compileTerm();
+        }
         writeNonTerminalToFile(TERM, false);
+
+        if (isOp()) {
+            eatAndAdvance(true);
+            compileTerm();
+        }
     }
 
-    private void eatAndAdvance(Predicate<Token> predicate) {
+    private boolean isTermConstant() {
+        return getCurrentTokenType() == TokenType.INT_CONST
+                || getCurrentTokenType() == TokenType.STRING_CONST
+                || isCurrentTokenEqualTo(THIS.getValue())
+                || isCurrentTokenEqualTo(NULL.getValue())
+                || isCurrentTokenEqualTo(TRUE.getValue())
+                || isCurrentTokenEqualTo(FALSE.getValue());
+    }
+
+    private void lookAhead() {
+        Token identifier = tokenizer.getCurrentToken();
+        advance();
+        if (isCurrentTokenEqualTo(OPEN_BRACKET.getCharacter())) {
+            writeToFile(prepareTerminalForOutPut(identifier));
+            eatAndAdvance(OPEN_BRACKET.getCharacter());
+            compileExpression();
+            eatAndAdvance(CLOSE_BRACKET.getCharacter());
+        } else if (isCurrentTokenEqualTo(DOT.getCharacter())) {
+            writeToFile(prepareTerminalForOutPut(identifier));
+            compileSubroutineCall();
+        } else {
+            writeToFile(prepareTerminalForOutPut(identifier));
+        }
+    }
+
+    private boolean isOp() {
+        return SymbolType.getOperators().stream().anyMatch(symbolType -> isCurrentTokenEqualTo(symbolType.getCharacter()));
+    }
+
+    private void eatAndAdvance(String value) {
         Token currentToken = tokenizer.getCurrentToken();
-        if (predicate.test(currentToken)) {
+        if (isCurrentTokenEqualTo(value)) {
             writeToFile(prepareTerminalForOutPut(currentToken));
-            tokenizer.advance();
+            advance();
         } else {
             printError(currentToken);
         }
     }
 
-    private void eatAndAdvance(String value) {
+    private void eatAndAdvance(boolean eat) {
         Token currentToken = tokenizer.getCurrentToken();
-        if (currentToken.getValue().equals(value)) {
+        if (eat) {
             writeToFile(prepareTerminalForOutPut(currentToken));
             advance();
         } else {
@@ -324,14 +367,18 @@ public class JackCompilationEngine implements Engine<Tokenizer> {
         return tokenizer.getCurrentToken().getValue();
     }
 
-    private Predicate<Token> isIdentifier() {
-        return token -> token.getValue().matches(validIdentifier);
+    private TokenType getCurrentTokenType() {
+        return tokenizer.getCurrentToken().getTokenType();
     }
 
-    private Predicate<Token> isType() {
-        return token -> token.getValue().equals(INT.getValue())
-                || token.getValue().equals(CHAR.getValue())
-                || token.getValue().equals(BOOLEAN.getValue())
-                || token.getValue().matches(validIdentifier);
+    private boolean isIdentifier() {
+        return getCurrentTokenValue().matches(validIdentifier);
+    }
+
+    private boolean isType() {
+        return isCurrentTokenEqualTo(INT.getValue())
+                || isCurrentTokenEqualTo(CHAR.getValue())
+                || isCurrentTokenEqualTo(BOOLEAN.getValue())
+                || getCurrentTokenValue().matches(validIdentifier);
     }
 }

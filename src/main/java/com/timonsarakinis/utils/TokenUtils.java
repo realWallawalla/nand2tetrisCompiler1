@@ -25,6 +25,14 @@ public class TokenUtils {
                 .filter(line -> isNotBlank(line) || !line.startsWith("/"))
                 .map(line -> replaceIgnoreCase(line, "\t", " "))
                 .map(line -> substringBefore(line, "//"))
+                .map(line -> {
+                    if (line.contains("\"")) {
+                        String stringConstant = substringBetween(line, "\"", "\"");
+                        String placeHolder = stringConstant.replace(" ", PLACE_HOLDER);
+                        line = StringUtils.replace(line, stringConstant, placeHolder);
+                    }
+                    return line;
+                })
                 .map(String::trim)
                 .collect(joining(" "));
 
@@ -33,25 +41,12 @@ public class TokenUtils {
     }
 
     public static List<String> splitIntoTokens(String lines) {
-        lines = prepareStringConstants(lines);
         lines = addSpacesToSymbolsForSplit(lines);
 
         return Stream.of(lines.split(" "))
                 .filter(StringUtils::isNotBlank)
                 .map(stringConstants -> stringConstants.replace(PLACE_HOLDER, " "))
                 .collect(Collectors.toList());
-    }
-
-    private static String prepareStringConstants(String lines) {
-        int numberOfStringConstants = countMatches(lines, "\"") / 2;
-
-        for (int i = 0; i < numberOfStringConstants; i++) {
-            String stringConstant = substringBetween(lines, "\"", "\"");
-            String placeHolder = substringBetween(lines, "\"", "\"")
-                    .replace(" ", PLACE_HOLDER);
-            lines = lines.replace(stringConstant, placeHolder);
-        }
-        return lines;
     }
 
     private static String addSpacesToSymbolsForSplit(String lines) {

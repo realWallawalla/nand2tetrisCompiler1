@@ -1,6 +1,9 @@
 package com.timonsarakinis.tokens.types;
 
+import com.google.common.collect.Lists;
+
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,5 +40,9 @@ public enum SymbolType {
 
     public static List<String> getCharacters() {
         return Arrays.stream(SymbolType.values()).map(SymbolType::getCharacter).collect(Collectors.toList());
+    }
+
+    public static List<SymbolType> getOperators() {
+        return Collections.unmodifiableList(Lists.newArrayList(PLUS, HIPHON, STAR, SLASH, AMPERSAND, VERTICAL_BAR, LESS_THAN, GREATER_THAN, EQUALS));
     }
 }
