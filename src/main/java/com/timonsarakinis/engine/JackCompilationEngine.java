@@ -14,7 +14,7 @@ import static com.timonsarakinis.utils.TokenUtils.prepareTerminalForOutPut;
 import static org.apache.commons.lang3.EnumUtils.getEnumIgnoreCase;
 import static org.apache.commons.lang3.EnumUtils.isValidEnumIgnoreCase;
 
-public class JackCompilationEngine implements Engine<Tokenizer> {
+public class JackCompilationEngine implements Engine {
 
     private Tokenizer tokenizer;
     private final String fileName;
@@ -26,8 +26,7 @@ public class JackCompilationEngine implements Engine<Tokenizer> {
     }
 
     @Override
-    public void compile(Tokenizer tokenizer) {
-        this.tokenizer = tokenizer;
+    public void compile() {
         if (tokenizer.hasMoreTokens()) {
             tokenizer.advance();
             //according to contract file has to start with class.
@@ -357,7 +356,7 @@ public class JackCompilationEngine implements Engine<Tokenizer> {
     }
 
     private void printError(Token currentToken) {
-        System.out.printf("syntax did not match: %s continuing \n", currentToken.getValue());
+        System.out.printf("did not match with: %s continue \n", currentToken.getValue());
     }
     private boolean isCurrentTokenEqualTo(String value) {
         return getCurrentTokenValue().equals(value);

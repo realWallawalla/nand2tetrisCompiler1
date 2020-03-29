@@ -3,10 +3,7 @@ package com.timonsarakinis;
 import com.timonsarakinis.engine.Engine;
 import com.timonsarakinis.engine.JackCompilationEngine;
 import com.timonsarakinis.tokenizer.JackTokenizer;
-import com.timonsarakinis.tokenizer.Tokenizer;
-import com.timonsarakinis.tokens.Token;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -16,7 +13,7 @@ import static com.timonsarakinis.utils.TokenUtils.*;
 public class Main {
     public static void main(String[] args) {
         //List<Path> filePaths = FileReaderWriter.getPaths(args[0]);
-        createDirectory();
+        createOutputDirectory();
         String directory = "src/main/resources/";
         List<Path> filePaths = getPaths(directory);
         filePaths.forEach(Main::prepareForTokenization);
@@ -32,8 +29,8 @@ public class Main {
 
     private static void compile(List<String> tokens, String fileName) {
         JackTokenizer tokenizer = new JackTokenizer(tokens);
-        Engine<Tokenizer> engine = new JackCompilationEngine(tokenizer, fileName);
-        engine.compile(tokenizer);
+        Engine engine = new JackCompilationEngine(tokenizer, fileName);
+        engine.compile();
         System.out.printf("wrote output successfully to file: %s \n", fileName);
     }
 }

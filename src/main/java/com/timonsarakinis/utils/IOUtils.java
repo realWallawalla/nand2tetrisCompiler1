@@ -59,7 +59,7 @@ public class IOUtils {
         return Paths.get(DIR_PATH + fileName + FILE_EXTENSION);
     }
 
-    public static void createDirectory() {
+    public static void createOutputDirectory() {
         Path path = Paths.get(DIR_PATH);
         try {
             if (!Files.exists(path)) {
